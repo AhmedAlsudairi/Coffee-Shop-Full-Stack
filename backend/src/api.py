@@ -28,7 +28,7 @@ db_drop_and_create_all()
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks',methods=['GET'])
-def index():
+def get_drinks():
     drinks = Drink.query.all()
     formatedDrinks= [drink.short() for drink in drinks]
     return jsonify({
@@ -46,7 +46,7 @@ def index():
 '''
 @app.route('/drinks-detail',methods=['GET'])
 @requires_auth('get:drinks-detail')
-def index():
+def get__drinks_details(token):
     drinks = Drink.query.all()
     formatedDrinks= [drink.long() for drink in drinks]
     return jsonify({
@@ -65,9 +65,16 @@ def index():
 '''
 @app.route('/drinks',methods=['POST'])
 @requires_auth('post:drinks')
-def index():
+def create_drink(token):
     data = request.get_json()
-    drink = Drink(title=data['title'], recipe=data['recipe'])
+
+    if not data['title']:
+        abort(400)
+
+    if not json.dumps(data['recipe']):
+        abort(400)    
+
+    drink = Drink(title=data['title'], recipe=json.dumps(data['recipe']))
     drink.insert()
     drinks = [drink.long()]
     return jsonify({
@@ -86,25 +93,36 @@ def index():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks/<id>',methods=['PATCH'])
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def index(id):
-    drink = Drink.query.filter(Drink.id == id).one_or_none()
-    
-    if not drink:
-        abort(404)
+def update_drink(token, drink_id):
+    data = request.get_json()
+    title = data.get('title', None)
+    recipe = data.get('recipe', None)
 
-    data = request.get_json()    
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        if drink is None:
+            abort(404)
 
-    drink.title = data['title']
-    drink.recipe = data['recipe']
-    drink.update()
+        if title is None:
+            abort(400)
+        
+        if title is not None:
+            drink.title = title
 
-    drinks = [drink.long()]
-    return jsonify({
-        'success': True,
-        'drinks': drinks
-    }), 200
+        if recipe is not None:
+            drink.recipe = json.dumps(recipe)
+
+        drink.update()
+
+        drinks = [drink.long()]
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        }), 200
+    except:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -119,7 +137,7 @@ def index(id):
 
 @app.route('/drinks/<id>',methods=['DELETE'])
 @requires_auth('delete:drinks')
-def index(id):
+def delete_drink(token,id):
     drink = Drink.query.filter(Drink.id == id).one_or_none()
     
     if not drink:

@@ -38,7 +38,7 @@ def get_token_auth_header():
             'description': 'Authorization header is expected.'
         }, 401)
 
-    token_parts = auth.split()
+    token_parts = request.headers['Authorization'].split()
 
     if token_parts[0].lower() != 'bearer':
          raise AuthError({
@@ -66,20 +66,21 @@ def get_token_auth_header():
     return true otherwise
 '''
 def check_permissions(permission, payload):
-
+    print(payload['permissions'])
+    print(permission)
     if 'permissions' not in payload:
         raise AuthError({
                             'code': 'invalid_claims',
                             'description': 'Permissions not included in JWT.'
-                        }, 400)
+                        }, 401)
 
     if permission not in payload['permissions']:
         raise AuthError({
             'code': 'unauthorized',
             'description': 'Permission not found.'
-        }, 403)
+        }, 401)
 
-    raise True
+    return True
 
 '''
 @TODO implement verify_decode_jwt(token) method
@@ -153,7 +154,7 @@ def verify_decode_jwt(token):
     raise AuthError({
                 'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
-            }, 400)
+            }, 401)
 
 '''
 @TODO implement @requires_auth(permission) decorator method
