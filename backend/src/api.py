@@ -131,7 +131,7 @@ def index(id):
         'success': True,
         'drinks': id
     }), 200
-    
+
 ## Error Handling
 '''
 Example error handling for unprocessable entity
@@ -155,13 +155,52 @@ def unprocessable(error):
 
 '''
 
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 400,
+                    "message": "Bad request"
+                    }), 400
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 401,
+                    "message": "Unauthorized"
+                    }), 401
+
+                    
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 403,
+                    "message": "Forbidden"
+                    }), 403
 '''
 @TODO implement error handler for 404
     error handler should conform to general task above 
 '''
-
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 404,
+                    "message": "Not Found"
+                    }), 404
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+@app.errorhandler(AuthError)
+def authentication_error(error):
+
+    return jsonify({
+                    "success": False, 
+                    "error": error.status_code,
+                    "message": error.error['description'],
+                    "code": error.error['code']
+                    }), error.status_code
