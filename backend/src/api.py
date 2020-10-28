@@ -32,8 +32,8 @@ def index():
     drinks = Drink.query.all()
     formatedDrinks= [drink.short() for drink in drinks]
     return jsonify({
-        'drinks': drinks,
-        'success': True
+        'success': True,
+        'drinks': formatedDrinks
     }), 200
 
 '''
@@ -44,7 +44,15 @@ def index():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks-detail',methods=['GET'])
+@requires_auth('get:drinks-detail')
+def index():
+    drinks = Drink.query.all()
+    formatedDrinks= [drink.long() for drink in drinks]
+    return jsonify({
+        'success': True,
+        'drinks': formatedDrinks
+    }), 200
 
 '''
 @TODO implement endpoint
@@ -55,7 +63,17 @@ def index():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks',methods=['POST'])
+@requires_auth('post:drinks')
+def index():
+    data = request.get_json()
+    drink = Drink(title=data['title'], recipe=data['recipe'])
+    drink.insert()
+    drinks = [drink.long()]
+    return jsonify({
+        'success': True,
+        'drinks': drinks
+    }), 200
 
 '''
 @TODO implement endpoint
