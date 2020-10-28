@@ -32,7 +32,7 @@ class AuthError(Exception):
 '''
 def get_token_auth_header():
     auth = request.headers['Authorization']
-     if not auth:
+    if not auth:
         raise AuthError({
             'code': 'authorization_header_missing',
             'description': 'Authorization header is expected.'
@@ -52,7 +52,7 @@ def get_token_auth_header():
             'description': 'Token not found.'
         }, 401)   
 
-   raise token_parts[1]
+    return token_parts[1]
 
 '''
 @TODO implement check_permissions(permission, payload) method
@@ -66,7 +66,20 @@ def get_token_auth_header():
     return true otherwise
 '''
 def check_permissions(permission, payload):
-    raise Exception('Not Implemented')
+
+    if 'permissions' not in payload:
+        raise AuthError({
+                            'code': 'invalid_claims',
+                            'description': 'Permissions not included in JWT.'
+                        }, 400)
+                        
+    if permission not in payload['permissions']:
+        raise AuthError({
+            'code': 'unauthorized',
+            'description': 'Permission not found.'
+        }, 403)
+
+    raise True
 
 '''
 @TODO implement verify_decode_jwt(token) method
