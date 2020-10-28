@@ -95,7 +95,7 @@ def index(id):
         abort(404)
 
     data = request.get_json()    
-    
+
     drink.title = data['title']
     drink.recipe = data['recipe']
     drink.update()
@@ -117,7 +117,21 @@ def index(id):
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks/<id>',methods=['DELETE'])
+@requires_auth('delete:drinks')
+def index(id):
+    drink = Drink.query.filter(Drink.id == id).one_or_none()
+    
+    if not drink:
+        abort(404)
 
+    drink.delete()
+
+    return jsonify({
+        'success': True,
+        'drinks': id
+    }), 200
+    
 ## Error Handling
 '''
 Example error handling for unprocessable entity
