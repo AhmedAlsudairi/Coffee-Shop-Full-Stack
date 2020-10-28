@@ -86,7 +86,25 @@ def index():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<id>',methods=['PATCH'])
+@requires_auth('patch:drinks')
+def index(id):
+    drink = Drink.query.filter(Drink.id == id).one_or_none()
+    
+    if not drink:
+        abort(404)
 
+    data = request.get_json()    
+    
+    drink.title = data['title']
+    drink.recipe = data['recipe']
+    drink.update()
+
+    drinks = [drink.long()]
+    return jsonify({
+        'success': True,
+        'drinks': drinks
+    }), 200
 
 '''
 @TODO implement endpoint
